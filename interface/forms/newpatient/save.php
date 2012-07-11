@@ -23,6 +23,7 @@ $billing_facility = formData('billing_facility');
 $reason           = formData('reason');
 $mode             = formData('mode');
 $referral_source  = formData('form_referral_source');
+$pos_code  = formData('pos_code');
 
 $facilityresult = sqlQuery("select name FROM facility WHERE id = $facility_id");
 $facility = $facilityresult['name'];
@@ -46,6 +47,7 @@ if ($mode == 'new')
       "facility = '$facility', " .
       "pc_catid = '$pc_catid', " .
       "facility_id = '$facility_id', " .
+	  "pos_code = '$pos_code', " .
       "billing_facility = '$billing_facility', " .
       "sensitivity = '$sensitivity', " .
       "referral_source = '$referral_source', " .
@@ -71,6 +73,7 @@ else if ($mode == 'update')
     "facility = '$facility', " .
     "pc_catid = '$pc_catid', " .
     "facility_id = '$facility_id', " .
+	"pos_code = '$pos_code', " .
     "billing_facility = '$billing_facility', " .
     "sensitivity = '$sensitivity', " .
     "referral_source = '$referral_source' " .

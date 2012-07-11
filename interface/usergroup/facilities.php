@@ -6,6 +6,12 @@ require_once("$srcdir/formdata.inc.php");
 
 $alertmsg = '';
 
+//POS Multiple Array data getting
+$POSData  = "";
+if( isset($_POST['pos_code_multiple']) && $_POST['pos_code_multiple'] != "" ){
+	$POSData = implode(",",$_POST['pos_code_multiple']);
+}
+
 /*		Inserting New facility					*/
 if (isset($_POST["mode"]) && $_POST["mode"] == "facility" && $_POST["newmode"] != "admin_facility") {
   $insert_id=sqlInsert("INSERT INTO facility SET " .
@@ -25,6 +31,7 @@ if (isset($_POST["mode"]) && $_POST["mode"] == "facility" && $_POST["newmode"] !
   "billing_location = '"  . trim(formData('billing_location' )) . "', " .
   "accepts_assignment = '"  . trim(formData('accepts_assignment' )) . "', " .
   "pos_code = '"  . trim(formData('pos_code' )) . "', " .
+  "pos_code_multiple = '"  . trim($POSData) . "', " .
   "domain_identifier = '"  . trim(formData('domain_identifier' )) . "', " .
   "attn = '"  . trim(formData('attn' )) . "', " .
   "tax_id_type = '"  . trim(formData('tax_id_type' )) . "', " .
@@ -52,6 +59,7 @@ if ($_POST["mode"] == "facility" && $_POST["newmode"] == "admin_facility")
 		billing_location='" . trim(formData('billing_location')) . "',
 		accepts_assignment='" . trim(formData('accepts_assignment')) . "',
 		pos_code='" . trim(formData('pos_code')) . "',
+		pos_code_multiple='" .trim($POSData). "',
 		domain_identifier='" . trim(formData('domain_identifier')) . "',
 		facility_npi='" . trim(formData('facility_npi')) . "',
 		attn='" . trim(formData('attn')) . "' ,

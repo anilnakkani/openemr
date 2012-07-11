@@ -445,7 +445,7 @@ function gen_x12_837($pid, $encounter, &$log, $encounter_claim=false) {
     "*"  . sprintf("%.2f",$clm_total_charges) . // Zirmed computes and replaces this
     "*"  .
     "*"  .
-    "*"  . sprintf('%02d', $claim->facilityPOS()) . ":" .
+    "*"  . sprintf('%02d', $claim->encFacilityPOS()) . ":" .
            ($CMS_5010 ? "B" : "") . ":" .
            $claim->frequencyTypeCode() . // Changed to correct single digit output
     "*Y" .
@@ -486,7 +486,7 @@ function gen_x12_837($pid, $encounter, &$log, $encounter_claim=false) {
   // Segment DTP*297 (Last Worked Date) omitted.
   // Segment DTP*296 (Authorized Return to Work Date) omitted.
 
-  if (strcmp($claim->facilityPOS(),'21') == 0 && $claim->onsetDateValid() ) {
+  if (strcmp($claim->encFacilityPOS(),'21') == 0 && $claim->onsetDateValid() ) {
     ++$edicount;
     $out .= "DTP" .     // Date of Hospitalization
       "*435" .
@@ -690,7 +690,7 @@ function gen_x12_837($pid, $encounter, &$log, $encounter_claim=false) {
   }
 
   // Loop 2310D is omitted in the case of home visits (POS=12).
-  if ($claim->facilityPOS() != 12 &&
+  if ($claim->encFacilityPOS() != 12 &&
       (!$CMS_5010 || $claim->facilityNPI() != $claim->billingFacilityNPI()))
     {
     ++$edicount;

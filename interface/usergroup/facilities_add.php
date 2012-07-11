@@ -36,6 +36,27 @@ parent.$.fn.fancybox.close();
 }
 ?>
 <script type="text/javascript">
+
+//Ensoftek - July-10-2012-Anil N - Onchange event for POS Selection
+function changePOSDefault()
+{
+	//GET Default POS Selection 
+	var posSelectArr = $('select#pos_code_multiple').val();
+		
+	if(posSelectArr != null){
+		$.ajax({
+		  url: '<?php print $GLOBALS['webroot'] ?>/interface/usergroup/ajax_get_pos_codes.php?posarr='+posSelectArr,
+		 
+		  success: function( data ) {
+				if(data != ""){
+					$('#span_def_pos').html(data);
+				}
+		   }
+		});
+	}
+}
+
+
 /// todo, move this to a common library
 
 function submitform() {
@@ -230,21 +251,26 @@ function displayAlert()
          </tr>
         <tr>
             <td><span class=text><?php xl('POS Code','e'); ?>: </span></td>
-            <td colspan="6">
-                <select name="pos_code">
+             <td colspan="6">
+                <select name="pos_code_multiple[]" id="pos_code_multiple" multiple="multiple" onchange="changePOSDefault();">
                 <?php
-                $pc = new POSRef();
-
-                foreach ($pc->get_pos_ref() as $pos) {
-                    echo "<option value=\"" . $pos["code"] . "\" ";
-                    echo ">" . $pos['code']  . ": ". $pos['title'];
-                    echo "</option>\n";
-                }
-
-                ?>
+			    $posListQry = sqlStatement("select * from list_options where list_id='POS'");
+				while($posRow=sqlFetchArray($posListQry)){?>
+					<option value="<?php echo $posRow['option_id'];?>"><?php echo $posRow['title'];?></option>
+				<?php }?>
                 </select>
             </td>
         </tr>
+		
+		<tr>
+            <td><span class="text"><?php xl('Default POS','e'); ?>:</span></td>
+            <td colspan="4">
+				<span id="span_def_pos">
+					<select name="pos_code" id="pos_code"><option value=""><?php xl('None','e');?></option></select>
+				</span>
+			</td>
+        </tr>
+		
         <tr>
             <td><span class="text"><?php xl('Billing Attn','e'); ?>:</span></td>
             <td colspan="4"><input type="text" name="attn" size="45"></td>

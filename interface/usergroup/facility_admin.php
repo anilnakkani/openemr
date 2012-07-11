@@ -39,6 +39,26 @@ parent.$.fn.fancybox.close();
 <script type="text/javascript" src="../main/calendar/modules/PostCalendar/pnincludes/PopupWindow.js"></script>
 <script type="text/javascript" src="../main/calendar/modules/PostCalendar/pnincludes/ColorPicker2.js"></script>
 <script type="text/javascript">
+
+//Ensoftek - July-10-2012 - Anil N - Onchange event for POS Selection
+function changePOSDefault()
+{
+	//GET Default POS Selection
+	var posSelectArr = $('select#pos_code_multiple').val();
+		
+	if(posSelectArr != null){
+		$.ajax({
+		  url: '<?php print $GLOBALS['webroot'] ?>/interface/usergroup/ajax_get_pos_codes.php?posarr='+posSelectArr,
+		 
+		  success: function( data ) {
+				if(data != ""){
+					$('#span_def_pos').html(data);
+				}
+		   }
+		});
+	}
+}
+
 function submitform() {
 	<?php if($GLOBALS['erx_enable']){ ?>
 	alertMsg='';
@@ -204,25 +224,51 @@ function displayAlert()
 	  <td><span class='text'><?php echo htmlspecialchars(xl('Color'),ENT_QUOTES); ?>: </span><span class="mandatory">&nbsp;*</span></td> <td><input type=entry name=ncolor id=ncolor size=20 value="<?php echo htmlspecialchars($facility{"color"}, ENT_QUOTES) ?>"></td>
 	  <td>[<a href="javascript:void(0);" onClick="pick('pick','newcolor');return false;" NAME="pick" ID="pick"><?php  echo htmlspecialchars(xl('Pick'),ENT_QUOTES); ?></a>]</td><td>&nbsp;</td>
 
+        <?php
+			$poscode_def =  $facility['pos_code'];
+			$poscodes = $facility['pos_code_multiple'];
+			$posArr = explode(",",$poscodes);
+		?>
         <tr>
-            <td><span class=text><?php xl('POS Code','e'); ?>: </span></td>
+            <td><span class=text><?php xl('POS Codes','e'); ?>: </span></td>
             <td colspan="6">
-                <select name="pos_code">
+               <select name="pos_code_multiple[]" id="pos_code_multiple" multiple="multiple" onchange="changePOSDefault();">
                 <?php
-                $pc = new POSRef();
-
-                foreach ($pc->get_pos_ref() as $pos) {
-                    echo "<option value=\"" . $pos["code"] . "\" ";
-                    if ($facility['pos_code'] == $pos['code']) {
-                        echo "selected";
-                    }
-                    echo ">" . $pos['code']  . ": ". $pos['title'];
-                    echo "</option>\n";
-                }
-
-                ?>
+					$posListQry = sqlStatement("select * from list_options where list_id='POS'");
+					while($posRow=sqlFetchArray($posListQry)){
+						$selMul = "";
+						if(in_array($posRow['option_id'],$posArr)){
+							$selMul = "selected";
+						}
+						?>
+						<option value="<?php echo $posRow['option_id'];?>" <?php  echo $selMul;?>><?php echo $posRow['title'];?></option>
+					<?php }?>
                 </select>
             </td>
+        </tr>
+		
+		<tr>
+            <td><span class="text"><?php xl('Default POS','e'); ?>:</span></td>
+            <td colspan="4">
+				<span id="span_def_pos">
+					<select name="pos_code" id="pos_code"><option value=""><?php xl('None','e');?></option>
+					<?php 
+						$res = sqlStatement("select * from list_options where list_id='POS' and option_id in (".$poscodes.")");
+						$numrows = sqlNumRows($res);
+						if($numrows > 0){
+							while($posRow=sqlFetchArray($res)){?>
+								<option value="<?php echo $posRow['option_id'];?>" <?php if($poscode_def == $posRow['option_id']){echo "selected";}?>><?php echo $posRow['title'];?></option>
+							<?php
+							}
+						}else{
+						?>
+							<option value=""><?php xl('None','e');?></option>
+						<?php
+						}
+					?>
+					</select>
+				</span>
+			</td>
         </tr>
         <tr>
             <td><span class="text"><?php xl('Billing Attn','e'); ?>:</span></td>

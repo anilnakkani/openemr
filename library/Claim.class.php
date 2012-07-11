@@ -729,6 +729,10 @@ class Claim {
   function facilityPOS() {
     return sprintf('%02d', trim($this->facility['pos_code']));
   }
+  
+  function encFacilityPOS() {
+    return sprintf('%02d', trim($this->encounter['pos_code']));
+  }
 
   function clearingHouseName() {
     return x12clean(trim($this->x12_partner['name']));
