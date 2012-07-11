@@ -105,7 +105,24 @@ var pid=<?php echo $pid;?>;
 var dte=document.getElementById('form_date').value;
 var facility=document.forms[0].facility_id.value;
 ajax_bill_loc(pid,dte,facility);
+ajaxConsulation(facility);
 }
+
+//Ensoftek- July-10-2012 - Anil N - Onchange event for Facility drop down for getting selected Poscodes in Administration Facilities
+function ajaxConsulation(sel_facility_id)
+{
+	$.ajax({
+	  url: '<?php print $GLOBALS['webroot'] ?>/interface/forms/newpatient/ajax_facility_pos.php?facility_id='+sel_facility_id,
+	 
+	  success: function( data ) {
+		if(data != ""){
+			$('#pos_span').html(data);
+		}
+	  }
+	});
+}
+
+
 </script>
 </head>
 
@@ -208,6 +225,50 @@ if ($fres) {
       </select>
      </td>
     </tr>
+	
+	<tr>
+		 <td class='bold' nowrap><?php xl('Consultation Reason For Visit:','e'); ?></td>
+		 <td class='text'>
+			<span id="pos_span">
+				<?php
+					$facilQry = "select pos_code,pos_code_multiple from facility where id='".add_escape_custom($def_facility)."'";
+					$facilRes = sqlStatement($facilQry);
+					$posCode = "";
+					$optstr = "<select name='pos_code' id='pos_code'><option value=''>--None--</option>";
+					 while($facilRow=sqlFetchArray($facilRes)){
+						$posCode_def = $facilRow['pos_code'];
+						$pos_multi = $facilRow['pos_code_multiple'];
+						if($pos_multi != ""){
+							
+							$res = sqlStatement("select * from list_options where list_id='POS' and option_id in (".$pos_multi.")");
+							$numrows = sqlNumRows($res);
+							if($numrows > 0){
+								while($posRow=sqlFetchArray($res)){
+									$selMul = "";
+									$pos_code = $result['pos_code'];
+									if ($viewmode) {
+										if($posRow['option_id'] == $pos_code){
+											$selMul = "selected";
+										}
+									}else{
+										if($posRow['option_id'] == $posCode_def){
+											$selMul = "selected";
+										}
+									}
+								
+									$optstr .= "<option value='".$posRow['option_id']."' ".$selMul.">".$posRow['title']."</option>";
+								}
+							}
+						}
+					}
+					$optstr .= "</select>";
+					
+					echo $optstr;
+				?>
+			</span>
+		 </td>
+	</tr>
+	
 	<tr>
 		<td class='bold' nowrap><?php echo htmlspecialchars( xl('Billing Facility'), ENT_NOQUOTES); ?>:</td>
 		<td class='text'>
