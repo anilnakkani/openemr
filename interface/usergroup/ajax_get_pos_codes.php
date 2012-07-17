@@ -16,7 +16,7 @@
 	
 	$res = sqlStatement("select * from list_options where list_id='POS' and option_id in (".$poslists.")");
 	$numrows = sqlNumRows($res);
-	$optstr = "<select name='pos_code' id='pos_code'><option value=''>--None--</option>";
+	$optstr = "<select name='pos_code' id='pos_code'><option value=''>None</option>";
 	if($numrows > 0){
 		while($posRow=sqlFetchArray($res)){
 			$optstr .= "<option value='".$posRow['option_id']."'>".$posRow['title']."</option>";

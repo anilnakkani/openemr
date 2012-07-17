@@ -251,7 +251,7 @@ function displayAlert()
             <td><span class="text"><?php xl('Default POS','e'); ?>:</span></td>
             <td colspan="4">
 				<span id="span_def_pos">
-					<select name="pos_code" id="pos_code"><option value="">--None--</option>
+					<select name="pos_code" id="pos_code"><option value="">None</option>
 					<?php 
 						$res = sqlStatement("select * from list_options where list_id='POS' and option_id in (".$poscodes.")");
 						$numrows = sqlNumRows($res);
@@ -262,7 +262,7 @@ function displayAlert()
 							}
 						}else{
 						?>
-							<option value="">--None--</option>
+							<option value="">None</option>
 						<?php
 						}
 					?>

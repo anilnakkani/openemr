@@ -16,7 +16,7 @@
 	$facilQry = "select pos_code,pos_code_multiple from facility where id='".add_escape_custom($facility_id)."'";
 	$facilRes = sqlStatement($facilQry);
 	$posCode = "";
-	$optstr = "<select name='pos_code' id='pos_code'><option value=''>--None--</option>";
+	$optstr = "<select name='pos_code' id='pos_code'><option value=''>None</option>";
 	 while($facilRow=sqlFetchArray($facilRes)){
 		$posCode_def = $facilRow['pos_code'];
 		$pos_multi = $facilRow['pos_code_multiple'];
