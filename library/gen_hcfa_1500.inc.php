@@ -482,7 +482,7 @@ function gen_hcfa_1500_page($pid, $encounter, &$log, &$claim) {
     put_hcfa($lino,16, 2, substr($tmp,2,2));
 
     // 24b. Place of Service
-    put_hcfa($lino, 19, 2, $claim->facilityPOS());
+    put_hcfa($lino, 19, 2, $claim->encFacilityPOS());
 
     // 24c. EMG
     // Not currently supported.
