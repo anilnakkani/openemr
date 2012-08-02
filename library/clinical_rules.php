@@ -174,7 +174,7 @@ function active_alert_summary($patient_id,$mode,$dateTarget='',$organize_mode='d
 //       Returns similar to default, but organizes by the active plans
 //  $options - can hold various option (for now, used to hold the manual number of labs for the AMC report)
 //
-function test_rules_clinic($provider='',$type='',$dateTarget='',$mode='',$patient_id='',$plan='',$organize_mode='default',$options=array()) {
+function test_rules_clinic($provider='',$type='',$dateTarget='',$mode='',$patient_id='',$plan='',$organize_mode='default',$options=array(),$pat_prov_rel='') {
 
   // If dateTarget is an array, then organize them.
   if (is_array($dateTarget)) {
@@ -272,12 +272,19 @@ function test_rules_clinic($provider='',$type='',$dateTarget='',$mode='',$patien
       } 
     }
     else {
-      // Look at one provider
-      $rez = sqlStatement("SELECT `pid` FROM `patient_data` " .
-        "WHERE providerID=?", array($provider) );
-      for($iter=0; $row=sqlFetchArray($rez); $iter++) {
-       $patientData[$iter]=$row;
-      }
+		//Ensoftek -- Anil.N -- If "Patients Shared for AMC" OPTION IS CHECKED, GETTING DISTINCT PATEINT IDS FROM ENCOUNTER TABLE
+		if( $pat_prov_rel == 'yes' ){
+			$rez = sqlStatement("SELECT DISTINCT pid FROM `form_encounter` ".
+				" WHERE provider_id=?", array($provider));
+		}else{
+			// Look at one provider
+			$rez = sqlStatement("SELECT `pid` FROM `patient_data` " .
+				"WHERE providerID=?", array($provider) );
+		}
+     
+		for($iter=0; $row=sqlFetchArray($rez); $iter++) {
+			$patientData[$iter]=$row;
+		}
     }
   }
   // Go through each patient(s)

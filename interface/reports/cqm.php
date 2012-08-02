@@ -266,6 +266,16 @@ $provider  = trim($_POST['form_provider']);
                         </td>
                   </tr>
                 <?php } ?>
+		<?php 
+			//Ensoftek - Anil.N -- Patients Shared for AMC option for getting encounter distinct Patients
+			if ($type_report == "amc") { 
+		?>
+			<tr>
+				<td colspan="2">
+					<input type="checkbox" name="pat_shared_amc" id="pat_shared_amc" value="yes" <?php if($_POST['pat_shared_amc'] == "yes"){echo "checked";}?>>&nbsp;<?php echo htmlspecialchars( xl('Patients Shared for AMC'), ENT_NOQUOTES); ?>
+				</td>
+			</tr>
+		<?php } ?>
 
 	</table>
 
@@ -368,7 +378,13 @@ $provider  = trim($_POST['form_provider']);
     $array_date['dateBegin'] = $begin_date;
     $array_date['dateTarget'] = $target_date;
     $options = array('labs_manual'=>$labs_manual);
-    $dataSheet = test_rules_clinic($provider,$rule_filter,$array_date,"report",'',$plan_filter,$organize_method,$options);
+	
+	//Ensoftek - Anil.N -- Patients Shared for AMC option for getting encounter distinct Patients
+	$pat_shared_amc = $_POST['pat_shared_amc'];
+	if($pat_shared_amc == "yes"){
+		$pat_prov_rel = "yes";
+	}
+	$dataSheet = test_rules_clinic($provider,$rule_filter,$array_date,"report",'',$plan_filter,$organize_method,$options,$pat_prov_rel);
   }
   else {
     $dataSheet = test_rules_clinic($provider,$rule_filter,$target_date,"report",'',$plan_filter,$organize_method);
