@@ -55,6 +55,7 @@ class C_Document extends Controller {
 		return $this->list_action($patient_id);
 	}
 	
+	//Upload multiple files on single click
 	function upload_action_process() {
 		$couchDB = false;
 		$harddisk = false;
