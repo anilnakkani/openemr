@@ -19,6 +19,17 @@ require_once("$srcdir/formatting.inc.php");
 require_once("$srcdir/options.inc.php");
 require_once("$srcdir/formdata.inc.php");
 
+//Get all active and inactive ICD9 codes records from billing table
+function getICDCodeBillingByEncounterData($pid,$encounter, $cols = "code_type, code, code_text")
+{
+    $res = sqlStatement("select $cols from billing where encounter = ? and pid=? and code_type ='ICD9' order by code_type, date ASC", array($encounter,$pid) );
+    for($iter=0; $row=sqlFetchArray($res); $iter++)
+    {
+        $all[$iter] = $row;
+    }
+    return $all;
+}
+
 // Some table cells will not be displayed unless insurance billing is used.
 $usbillstyle = $GLOBALS['ippf_specific'] ? " style='display:none'" : "";
 
@@ -665,6 +676,7 @@ function codeselect(selobj) {
   top.restoreSession();
   var f = document.forms[0];
   f.newcodes.value = selobj.options[i].value;
+  document.getElementById("cnt_icd").value = 1;
   f.submit();
  }
 }
@@ -673,6 +685,7 @@ function copayselect() {
  top.restoreSession();
  var f = document.forms[0];
  f.newcodes.value = 'COPAY||';
+ document.getElementById("cnt_icd").value = 1;
  f.submit();
 }
 
@@ -942,6 +955,44 @@ echo " </tr>\n";
  </tr>
 
 <?php
+//Globals checking for auto populated diagnosis codes from selected encounter 
+$global_chk_icd = $GLOBALS['auto_populate_icdcodes_feesheet'];
+if($global_chk_icd){
+	$icdQuery = " SELECT ls.id,ls.diagnosis,fe.provider_id FROM forms ".
+		 " f LEFT JOIN form_encounter fe ON f.encounter = fe.encounter ".
+		 " LEFT JOIN issue_encounter ie ON ie.encounter = fe.encounter ".
+		 " LEFT JOIN lists ls ON ls.id = ie.list_id WHERE ie.pid = '".$pid."'".
+		 " AND ie.encounter='".$encounter."' ";
+	$icdRes = sqlstatement($icdQuery);
+	$skipIcdCodes = array();
+	$icdEncArr = array();
+	$icdProvArr = array();
+	while($icdRow = sqlFetchArray($icdRes)){
+		$listID = $icdRow['id'];
+		$diagnosis = $icdRow['diagnosis'];
+		$diagnArr = explode(":",$diagnosis);
+		if( $diagnArr[0] == "ICD9"){
+			$newtype = "ICD9";
+			$code = $diagnArr[1];
+			$icdEncArr[] = $code;
+			$icdProvArr[] = $icdRow['provider_id'];
+		}
+	}
+
+	//Saved data checking from billing table
+	$completeBillResult = getICDCodeBillingByEncounterData($pid, $encounter, "*");
+	if ($completeBillResult) {
+	  foreach ($completeBillResult as $iter) {
+		//Skip ICD9 code checking 
+		if( in_array($iter["code"],$icdEncArr) ){
+				$skipIcdCodes[] = $iter["code"];
+		}
+	  }
+	}
+}
+
+
+
 $justinit = "var f = document.forms[0];\n";
 
 // $encounter_provid = -1;
@@ -1121,6 +1172,30 @@ if ($_POST['newcodes']) {
   }
 }
 
+//Globals checking for pre populated data from encounters icd9 codes
+//First Time, whether those diagnosis codes not saving in the database
+if($global_chk_icd){
+	if(!isset( $_POST['cnt_icd'])){
+		if( count($icdEncArr) > 0 ){
+			foreach($icdEncArr as $icdKey => $icdVal){
+				$newtype = "ICD9";
+				$code = $icdVal;
+				
+				//Skipp condition checking for saving billing codes
+				if( !in_array($code,$skipIcdCodes) ){
+					$icdCodeRow = sqlQuery("select * from codes where code = '".$code."' order by id DESC limit 1");
+					$modifier = $icdCodeRow['modifier'];
+					$units = $icdCodeRow['units'];
+					$fee = $icdCodeRow['fee'];
+					$provider_id = $icdProvArr[$icdKey];
+					$code_text = $icdCodeRow['code_text'];
+					echoLine(++$bill_lino, $newtype, $code, trim($modifier), $ndc_info,1,0,$units,$fee,NULL,FALSE,$code_text,NULL,$provider_id);
+				}
+			}
+		}
+	}
+}
+
 $tmp = sqlQuery("SELECT provider_id, supervisor_id FROM form_encounter " .
   "WHERE pid = ? AND encounter = ? " .
   "ORDER BY id DESC LIMIT 1", array($pid,$encounter) );
@@ -1216,7 +1291,7 @@ if (true) {
 ?>
 
 &nbsp; &nbsp; &nbsp;
-
+<input type="hidden" name="cnt_icd" id="cnt_icd" value="0">
 <?php if (!$isBilled) { ?>
 <input type='submit' name='bn_save' value='<?php echo xla('Save');?>' />
 &nbsp;

@@ -615,6 +615,13 @@ $GLOBALS_METADATA = array(
       '0',                              // default = true
       xl('This will use the custom immunizations list rather than the standard CVX immunization list.')
     ),
+	
+	'auto_populate_icdcodes_feesheet' => array(
+      xl('Populate Fee sheet using diagnosis codes from selected ISSUES in encounter'),
+      'bool',                           // data type
+      '0',                              // default = true
+      xl('This will use the icd9 codes from selected encounters in fee sheet.')
+    ),
 
   ),
     
